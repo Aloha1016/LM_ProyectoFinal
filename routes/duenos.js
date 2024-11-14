@@ -1,7 +1,7 @@
 import express from 'express'
 import bcrypt from 'bcryptjs'
 import admin from 'firebase-admin'
-import serviceAccount from '../config/lenguajesad2024dds-firebase-adminsdk-j984i-2ef026b459.json' with { type: 'json'}
+import serviceAccount from '../config/lenguajesad.json' with { type: 'json'}
 import { generateToken, verifyToken } from './conexion.js'
 
 admin.initializeApp({
