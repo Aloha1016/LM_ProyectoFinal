@@ -1,7 +1,6 @@
 import express from 'express'
 import { db } from '../firebase.js'
 import multer from 'multer'
-import path from 'path'
 
 const router = express.Router()
 const productCollection = db.collection('productos')
@@ -31,7 +30,7 @@ router.post('/crearproducto', upload.single('imagen'), async (req, res) => {
     let imagenUrl = null
 
     if (req.file) {
-      imagenUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`
+      imagenUrl = `${req.protocol}://${req.get('host')}/uploads/productos/${req.file.filename}`
     }
 
     await productCollection.add({
