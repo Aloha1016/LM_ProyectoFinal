@@ -143,4 +143,62 @@ router.get('/proveedores', async (req, res) => {
     }
 })
 
+router.put('/marcarentregado/:orderId', async (req, res) => {
+    const { orderId } = req.params
+
+    try {
+        const orderDoc = await supplierOrderCollection.doc(orderId).get()
+
+        if (!orderDoc.exists) {
+            return res.status(404).json({ error: 'El pedido no existe.' })
+        }
+
+        const orderData = orderDoc.data()
+
+        const productQuery = await db.collection('productos').where('nombre', '==', orderData.nombreProducto).get()
+
+        if (productQuery.empty) {
+            return res.status(404).json({ error: 'Producto no encontrado.' })
+        }
+
+        const productDoc = productQuery.docs[0]
+        const productData = productDoc.data()
+
+        const nuevaCantidad = (productData.cantidad || 0) + orderData.cantidad
+        await db.collection('productos').doc(productDoc.id).update({ cantidad: nuevaCantidad })
+
+        await supplierOrderCollection.doc(orderId).delete()
+
+        res.status(200).json({ message: 'Pedido marcado como entregado y producto actualizado.' })
+    } catch (error) {
+        res.status(500).json({ error: 'Error al procesar el pedido', details: error.message })
+    }
+})
+
+router.get('/ordenesProveedor', async (req, res) => {
+    try {
+        const callOrdersSupplier = await supplierOrderCollection.get()
+
+        if (callOrdersSupplier.empty) {
+            return res.status(404).json({ error: 'No se encontraron órdenes a proveedores' })
+        }
+
+        const ordenProveedor = callOrdersSupplier.docs.map(doc => {
+            const data = doc.data()
+
+            return {
+                id: doc.id,
+                nombreProveedor: data.nombreProveedor,
+                nombreProducto: data.nombreProducto,
+                categoria: data.categoria,
+                cantidad: `${data.cantidad} ${data.unidad}`,
+            }
+        })
+
+        res.status(200).json(ordenProveedor)
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener las órdenes de proveedor', details: error.message })
+    }
+})
+
 export default router
