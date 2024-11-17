@@ -51,4 +51,40 @@ router.post('/crearproducto', upload.single('imagen'), async (req, res) => {
   }
 })
 
+router.get('/productos', async (req, res) => {
+  try {
+    const callProduct = await productCollection.get()
+
+    if (callProduct.empty) {
+      return res.status(404).json({ error: 'No se encontraron productos' })
+    }
+
+    const productos = callProduct.docs.map(doc => {
+      const data = doc.data()
+      let estado
+
+      if (data.cantidad === 0) {
+        estado = 'Agotado'
+      } else if (data.cantidad <= data.valorUmbral) {
+        estado = 'Poca disponibilidad'
+      } else {
+        estado = 'Disponible'
+      }
+
+      return {
+        nombre: data.nombre,
+        precioCompra: data.precioCompra,
+        cantidad: `${data.cantidad} ${data.unidad}`,
+        valorUmbral: `${data.valorUmbral} ${data.unidad}`,
+        fechaCaducidad: data.fechaCaducidad,
+        estado: estado,
+      }
+    })
+
+    res.status(200).json(productos)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los productos', details: error.message })
+  }
+})
+
 export default router

@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url'
 import duenosRoutes from './routes/duenos.js'
 import productRoutes from './routes/producto.js'
 import supplierRouter from './routes/proveedor.js'
+import ordersRouter from './routes/ordenes.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -25,6 +26,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use('/api/dueno', duenosRoutes)
 app.use('/api/producto', productRoutes)
 app.use('/api/proveedor', supplierRouter)
+app.use('/api/orden', ordersRouter)
 
 const PORT = process.env.PORT || 4000
 

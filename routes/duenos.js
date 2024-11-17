@@ -56,6 +56,10 @@ router.post('/login', async (req, res) => {
 router.post('/creardueno', async (req, res) => {
   const { nombre, correo, password } = req.body
 
+  if (!password || password.length < 8) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' })
+  }
+
   try {
     const findCorreo = await duenosCollection.where('correo', '==', correo).get()
 
