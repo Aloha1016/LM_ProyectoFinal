@@ -87,4 +87,5 @@ router.get('/productos', async (req, res) => {
   }
 })
 
+export { productCollection }
 export default router
