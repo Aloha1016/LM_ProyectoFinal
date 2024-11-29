@@ -87,5 +87,102 @@ router.get('/productos', async (req, res) => {
   }
 })
 
+router.get('/sumar-cantidades', async (req, res) => {
+  try {
+    const callProduct = await productCollection.get()
+
+    if (callProduct.empty) {
+      return res.status(404).json({ error: 'No se encontraron productos' })
+    }
+
+    const totalCantidad = callProduct.docs.reduce((acc, doc) => {
+      const data = doc.data()
+      return acc + (parseInt(data.cantidad) || 0)
+    }, 0)
+
+    res.status(200).json({ totalCantidad })
+  } catch (error) {
+    res.status(500).json({ error: 'Error al sumar las cantidades', details: error.message })
+  }
+})
+
+router.get('/contarCategoriasUnicas', async (req, res) => {
+  try {
+    const productsSnapshot = await productCollection.get()
+    const categoriasUnicas = new Set();
+
+    productsSnapshot.forEach(doc => {
+      const producto = doc.data()
+      if (producto.categoria) {
+        categoriasUnicas.add(producto.categoria)
+      }
+    })
+    
+    const cantidadCategoriasUnicas = categoriasUnicas.size
+    res.status(200).json({ cantidadCategoriasUnicas })
+  } catch (error) {
+    res.status(500).json({ error: 'Error al contar las categorías', details: error.message })
+  }
+})
+
+router.get('/lowproductos', async (req, res) => {
+  try {
+    const callProduct = await productCollection.get()
+
+    if (callProduct.empty) {
+      return res.status(404).json({ error: 'No se encontraron productos' })
+    }
+
+    const productos = callProduct.docs.map(doc => {
+      const data = doc.data()
+
+      return {
+        imagenUrl: data.imagenUrl,
+        nombre: data.nombre,
+        cantidad: data.cantidad,
+        unidad: data.unidad,
+        valorUmbral: data.valorUmbral,
+      }
+    })
+
+    const productosFiltrados = productos
+      .filter(producto => producto.cantidad <= producto.valorUmbral)
+      .slice(0, 2);
+
+    res.status(200).json(productosFiltrados)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los productos', details: error.message })
+  }
+})
+
+router.get('/lowproductos-sinLim', async (req, res) => {
+  try {
+    const callProduct = await productCollection.get()
+
+    if (callProduct.empty) {
+      return res.status(404).json({ error: 'No se encontraron productos' })
+    }
+
+    const productos = callProduct.docs.map(doc => {
+      const data = doc.data()
+
+      return {
+        imagenUrl: data.imagenUrl,
+        nombre: data.nombre,
+        cantidad: data.cantidad,
+        unidad: data.unidad,
+        valorUmbral: data.valorUmbral,
+      }
+    })
+
+    const productosFiltrados = productos
+      .filter(producto => producto.cantidad <= producto.valorUmbral)
+
+    res.status(200).json(productosFiltrados)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener los productos', details: error.message })
+  }
+})
+
 export { productCollection }
 export default router
