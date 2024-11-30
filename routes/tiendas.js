@@ -141,4 +141,5 @@ router.get('/tienda/:idTienda', async (req, res) => {
     }
 })
 
+export { storeCollection }
 export default router

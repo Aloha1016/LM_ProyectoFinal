@@ -1171,4 +1171,6 @@ router.get('/puntos', async (req, res) => {
     }
 });
 
+export { supplierOrderCollection }
+export { supplierCollection }
 export default router

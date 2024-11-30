@@ -834,5 +834,81 @@ router.get('/ordenes/estadisticas', async (req, res) => {
     }
 })
 
+router.get('/cantidad-vendida-7dias', async (req, res) => {
+  try {
+    const callOrders = await ordersCollection.get()
+
+    if (callOrders.empty) {
+      return res.status(404).json({ error: 'No se encontraron órdenes' })
+    }
+
+    // Obtener la fecha actual
+    const currentDate = new Date()
+
+    // Calcular la fecha de hace 7 días
+    const startOfPeriod = new Date(currentDate)
+    startOfPeriod.setDate(currentDate.getDate() - 7) // 7 días atrás
+
+    // Convertir las fechas a formato YYYY-MM-DD
+    const startOfPeriodStr = startOfPeriod.toISOString().split('T')[0] // Formato YYYY-MM-DD
+    const currentDateStr = currentDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
+
+    const totalCantidad = callOrders.docs.reduce((acc, doc) => {
+      const data = doc.data()
+      const fechaEntrega = new Date(data.fechaEntrega.split('/').reverse().join('-')) // Convertir fecha en formato DD/MM/YYYY a YYYY-MM-DD
+      const estadoOrden = data.estado
+
+      // Verificar si la fecha de entrega está en el rango de los últimos 7 días y el estado es "Confirmado"
+      if (fechaEntrega >= new Date(startOfPeriodStr) && fechaEntrega <= new Date(currentDateStr) && estadoOrden === "Confirmado") {
+        return acc + (parseInt(data.cantidad) || 0)
+      }
+
+      return acc
+    }, 0)
+
+    res.status(200).json({ totalCantidad })
+  } catch (error) {
+    res.status(500).json({ error: 'Error al contar la cantidad vendida', details: error.message })
+  }
+})
+
+router.get('/suma-precioPedido-7dias', async (req, res) => {
+  try {
+    const callOrders = await ordersCollection.get()
+
+    if (callOrders.empty) {
+      return res.status(404).json({ error: 'No se encontraron órdenes' })
+    }
+
+    // Obtener la fecha actual
+    const currentDate = new Date()
+
+    // Calcular la fecha de hace 7 días
+    const startOfPeriod = new Date(currentDate)
+    startOfPeriod.setDate(currentDate.getDate() - 7) // 7 días atrás
+
+    // Convertir las fechas a formato YYYY-MM-DD
+    const startOfPeriodStr = startOfPeriod.toISOString().split('T')[0] // Formato YYYY-MM-DD
+    const currentDateStr = currentDate.toISOString().split('T')[0] // Formato YYYY-MM-DD
+
+    const totalPrecioPedido = callOrders.docs.reduce((acc, doc) => {
+      const data = doc.data()
+      const fechaEntrega = new Date(data.fechaEntrega.split('/').reverse().join('-')) // Convertir fecha en formato DD/MM/YYYY a YYYY-MM-DD
+      const estadoOrden = data.estado
+
+      // Verificar si la fecha de entrega está en el rango de los últimos 7 días y el estado es "Confirmado"
+      if (fechaEntrega >= new Date(startOfPeriodStr) && fechaEntrega <= new Date(currentDateStr) && estadoOrden === "Confirmado") {
+        return acc + (parseFloat(data.precioPedido) || 0)
+      }
+
+      return acc
+    }, 0)
+
+    res.status(200).json({ totalPrecioPedido })
+  } catch (error) {
+    res.status(500).json({ error: 'Error al sumar los precios de los pedidos', details: error.message })
+  }
+})
+
 export { ordersCollection }
 export default router;
